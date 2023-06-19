@@ -56,4 +56,10 @@ class Post extends Model
         //     )
         // );
     }
+
+    // supaya otomatis route menggunakan param slug
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
 }
