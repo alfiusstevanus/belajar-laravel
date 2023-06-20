@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class DashboardPostController extends Controller
 {
@@ -45,8 +46,13 @@ class DashboardPostController extends Controller
             'title' => 'required|max:255',
             'slug' => 'required|unique:posts',
             'category_id' => 'required',
+            'image' => 'image|file|max:5120',
             'body' => 'required'
         ]);
+
+        if ($request->file('image')) {
+            $validatedData['image'] = $request->file('image')->store('post-images');
+        }
 
 
         // strip_tags() untuk menghilangkan tag tag html di dalam paragrafnya
@@ -79,9 +85,12 @@ class DashboardPostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Post $post)
     {
-        //
+        return view('dashboard/posts/edit', [
+            'post' => $post,
+            'categories' => Category::all()
+        ]);
     }
 
     /**
@@ -91,9 +100,41 @@ class DashboardPostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Post $post)
     {
-        //
+        $rules = [
+            'title' => 'required|max:255',
+            'category_id' => 'required',
+            'image' => 'image|file|max:5120',
+            'body' => 'required'
+        ];
+
+
+
+        if ($request->slug != $post->slug) {
+            $rules['slug'] = 'required|unique:posts';
+        }
+
+        $validatedData = $request->validate($rules);
+
+        // strip_tags() untuk menghilangkan tag tag html di dalam paragrafnya
+        $validatedData['excerpt'] = Str::limit(strip_tags($request->body), 200);
+
+        // upload image ke folder setelah validasi dan hapus foto lama
+        if ($request->file('image')) {
+            if ($request->oldImage) {
+                Storage::delete($request->oldImage);
+            }
+            $validatedData['image'] = $request->file('image')->store('post-images');
+        }
+
+        // $validatedData['user_id'] = auth()->user()->id;
+        // Post::create($validatedData);
+        // versi lebih ringkas(1 baris aja)
+        $request->user()->posts()->where('id', $post->id)
+            ->update($validatedData);
+
+        return redirect('/dashboard/posts')->with('success', 'Post has been updated!');
     }
 
     /**
@@ -102,8 +143,13 @@ class DashboardPostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Post $post)
     {
-        //
+        if ($post->image) {
+            Storage::delete($post->image);
+        }
+        Post::destroy($post->id);
+
+        return redirect('/dashboard/posts')->with('success', 'Post has been deleted!');
     }
 }

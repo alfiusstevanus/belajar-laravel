@@ -8,13 +8,13 @@
         <ul class="nav flex-column">
           <li class="nav-item">
             <a class="nav-link d-flex align-items-center gap-2  {{ Request::is('dashboard') ? 'text-danger' : 'text-dark' }}" aria-current="page" href="/dashboard">
-              <svg class="bi"><use xlink:href="#house-fill"/></svg>
+              <svg class="bi"><span data-feather="home"></span></svg>
               Dashboard
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link d-flex align-items-center gap-2 {{ Request::is('dashboard/posts*') ? 'text-danger' : 'text-dark' }}" href="/dashboard/posts">
-              <svg class="bi"><use xlink:href="#file-earmark"/></svg>
+              <svg class="bi"><span data-feather="file-text"></span></svg>
               My Posts
             </a>
           </li>
@@ -26,13 +26,29 @@
           <li class="nav-item">
               <form action="/logout" method="POST">
                   @csrf
-              <button class="nav-link d-flex align-items-center gap-2 text-danger" href="#">
-              <svg class="bi"><use xlink:href="#door-closed"/></svg>
+              <button class="nav-link d-flex align-items-center gap-2 text-dark" href="#">
+              <svg class="bi"><span data-feather="log-out"></span></svg>
               Logout
               </button>
               </form>
           </li>
         </ul>
+
+        @can('isAdmin')          
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted ms-4 text-danger">
+          <span class="text-primary">
+            ADMINISTRATOR
+          </span>
+        </h6>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 {{ Request::is('dashboard/categories*') ? 'text-danger' : 'text-dark' }}" href="/dashboard/categories">
+              <svg class="bi"><span data-feather="grid"></span></svg>
+              Post Categories
+            </a>
+          </li>
+        </ul>
+        @endcan
       </div>
     </div>
   </div>
